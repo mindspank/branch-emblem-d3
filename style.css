@@ -1,0 +1,22 @@
+#logo { 
+  width: 500px;
+  height: 500px; 
+}
+
+#logo .base {
+    stroke: #000;
+    stroke-width: 4px;
+    fill: #fff;
+}
+
+#logo g .innercircle {
+   fill: #000;
+}
+
+#path {
+    fill: 000;
+}
+
+.textpath {
+    fill: #fff;
+}
