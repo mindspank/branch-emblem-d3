@@ -1,7 +1,7 @@
 var d3 = require('d3');
 var tree = require('./lib/branchtree')
 
-var inputw = 500, inputh = 500;
+var inputw = 400, inputh = 400;
 
 var margin = {
     top: 20,
@@ -13,8 +13,6 @@ var margin = {
 var width = inputw - margin.left - margin.right;
 var height = inputh - margin.top - margin.bottom;
 
-var outerRadius = (width / 2) - 10;
-var outerRingWidth = width / 6;
 
 var data = ['Innovate', 'Collaborate', 'Evangelize'];
 
@@ -26,6 +24,9 @@ var svg = d3.select("#logo").append("svg")
 
 var computetext = svg.append('text').style('fill', 'none').text('Test');
 
+var outerRadius = (width / 2) - (computetext.node().getBBox().height / 4);
+var outerRingWidth = width / 6;
+
 var arc = d3.svg.arc()
     .innerRadius(outerRadius - outerRingWidth)
     .outerRadius(outerRadius)
@@ -35,9 +36,12 @@ var pie = d3.layout.pie()
     .startAngle(angle * Math.PI / 180)
     .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
     .value(function(d) { return d.length < 3 ? 1 : data.length; })
-    .padAngle(.02)
+    //.padAngle(.02)
     .sort(null);
 
+/**
+ * The base circle
+ */
 svg.append('circle')
     .attr('class', 'base')
     .attr('cx', function() {
@@ -48,8 +52,16 @@ svg.append('circle')
     })
     .attr('r', function() {
         return width / 2;
-    });
+    })
+    .style({
+        stroke: '#464646',
+        'stroke-width': '5px',
+        fill: '#fff'
+    })
 
+/**
+ * Inner Circle / Background for tree
+ */
 svg.append('circle')
     .attr('class', 'innercircle')
     .attr('cx', function() {
@@ -59,15 +71,10 @@ svg.append('circle')
         return height / 2;
     })
     .attr('r', function() {
-        return (width / 2);
+        return (width / 4);
     });
-
-var inner = svg.append('g')
-    .attr('class', 'innergroup')
-    .attr("transform", "translate(" + width / 4 + "," + 90 + ")");
-
+        
 var g = svg.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
 var path = g.selectAll(".donutArcs")
     .data(pie(data))
     .enter().append("path")
@@ -113,4 +120,5 @@ g.selectAll(".donutText")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
-tree(); 
+
+tree();

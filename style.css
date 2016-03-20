@@ -2,34 +2,20 @@
   width: 500px;
   height: 500px; 
 }
-
-#logo .base {
-    stroke: #464646;
-    stroke-width: 4px;
-    fill: #fff;
-}
-
 #logo g .innercircle {
    fill: #464646;
 }
-
 .donutArcs {
     fill: #464646;
     stroke: #464646;
 }
-
 .textpath {
     fill: #fff;
 }
-
 svg text {
     fill: #fff;
     font-family: 'Fira Mono';
-    font-size: 40px;
-    letter-spacing: 5px;
+    font-size: 25px;
+    letter-spacing: 10px;
     text-transform: uppercase;
-}
-
-.branchline {
-    stroke: white;
 }

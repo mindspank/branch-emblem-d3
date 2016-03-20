@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var d3 = require('d3');
 
-var w = 230, h = 230;
+var w = 400, h = 400;
 
 // Tree configuration
 var branches = [];
@@ -10,9 +10,9 @@ var maxDepth = 5;
 var seed = {
     i: 0,
     x: w / 2,
-    y: h,
+    y: (h / 3) * 2,
     a: 0,
-    l: h / 5,
+    l: h / 11,
     d: 0
 }; // a = angle, l = length, d = depth
 var da = 0.6; // Angle delta
@@ -83,7 +83,7 @@ function y2(d) {
 
 function create() {
     setTimeout(function() {
-        svg = d3.select('.innergroup');
+        svg = d3.select('#logo svg');
 
         branches = [];
         branch(seed);
@@ -94,8 +94,9 @@ function create() {
             .append('line')
             .attr('class', 'branchline')
             .style('stroke-width', function(d) {
-                return parseInt(maxDepth + 2 - d.d) + 'px';
+                return parseInt(maxDepth + 1 - d.d) + 'px';
             })
+            .style('stroke', '#fff')
             .attr('id', function(d) {
                 return 'id-' + d.i;
             })
@@ -109,7 +110,7 @@ function create() {
             .attr('x2', x2)
             .attr('y2', y2);
 
-        //setTimeout(update, 2000);
+        setTimeout(update, 2000);
 
     }, 400)
 };
@@ -142,7 +143,7 @@ module.exports = create;
 var d3 = require('d3');
 var tree = require('./lib/branchtree')
 
-var inputw = 500, inputh = 500;
+var inputw = 400, inputh = 400;
 
 var margin = {
     top: 20,
@@ -154,8 +155,6 @@ var margin = {
 var width = inputw - margin.left - margin.right;
 var height = inputh - margin.top - margin.bottom;
 
-var outerRadius = (width / 2) - 10;
-var outerRingWidth = width / 6;
 
 var data = ['Innovate', 'Collaborate', 'Evangelize'];
 
@@ -167,6 +166,9 @@ var svg = d3.select("#logo").append("svg")
 
 var computetext = svg.append('text').style('fill', 'none').text('Test');
 
+var outerRadius = (width / 2) - (computetext.node().getBBox().height / 4);
+var outerRingWidth = width / 6;
+
 var arc = d3.svg.arc()
     .innerRadius(outerRadius - outerRingWidth)
     .outerRadius(outerRadius)
@@ -176,9 +178,12 @@ var pie = d3.layout.pie()
     .startAngle(angle * Math.PI / 180)
     .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
     .value(function(d) { return d.length < 3 ? 1 : data.length; })
-    .padAngle(.02)
+    //.padAngle(.02)
     .sort(null);
 
+/**
+ * The base circle
+ */
 svg.append('circle')
     .attr('class', 'base')
     .attr('cx', function() {
@@ -189,8 +194,16 @@ svg.append('circle')
     })
     .attr('r', function() {
         return width / 2;
-    });
+    })
+    .style({
+        stroke: '#464646',
+        'stroke-width': '5px',
+        fill: '#fff'
+    })
 
+/**
+ * Inner Circle / Background for tree
+ */
 svg.append('circle')
     .attr('class', 'innercircle')
     .attr('cx', function() {
@@ -200,15 +213,10 @@ svg.append('circle')
         return height / 2;
     })
     .attr('r', function() {
-        return (width / 2);
+        return (width / 4);
     });
-
-var inner = svg.append('g')
-    .attr('class', 'innergroup')
-    .attr("transform", "translate(" + width / 4 + "," + 90 + ")");
-
+        
 var g = svg.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
 var path = g.selectAll(".donutArcs")
     .data(pie(data))
     .enter().append("path")
@@ -254,7 +262,8 @@ g.selectAll(".donutText")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
-tree(); 
+
+tree();
 },{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
 !function() {
   var d3 = {
