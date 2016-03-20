@@ -8,6 +8,12 @@ function branchtree() {
     var depth = 5;
     var minLineWeight = 1;
     var animateDuration = 600;
+    
+    var align = 'middle';
+    var alignSettings = {
+        middle: function() { return (h / 3) * 2; },
+        bottom: function() { return h; }
+    };
 
     var da = 0.6; // Angle delta
     var dl = 0.8; // Length delta (factor)
@@ -70,9 +76,9 @@ function branchtree() {
             seed = {
                 i: 0,
                 x: w / 2,
-                y: (h / 3) * 2,
+                y: alignSettings[align](),
                 a: 0,
-                l: h / 11,
+                l: align === 'middle' ? h / 11 : h / depth,
                 d: 0
             };
 
@@ -92,7 +98,9 @@ function branchtree() {
                     return 'id-' + d.i;
                 });
                 
-            lines.transition().duration(animateDuration)
+            lines.transition()
+                .ease("linear")
+                .duration(animateDuration)
                 .attr('x1', x1)
                 .attr('y1', y1)
                 .attr('x2', x2)
@@ -134,7 +142,12 @@ function branchtree() {
         depth = _;
         return tree;
     };
-
+    tree.align = function(_) {
+        if (!arguments) return align;
+        align = _;
+        return tree;
+    };
+    
     return tree;
 
 };
@@ -157,7 +170,7 @@ var width = inputw - margin.left - margin.right;
 var height = inputh - margin.top - margin.bottom;
 
 
-var data = ['Innovate', 'Collaborate', 'Evangelize'];
+var data = ['Nick', 'Webster'];
 
 var svg = d3.select("#logo").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -172,7 +185,7 @@ var outerRingWidth = width / 6;
 
 var arc = d3.svg.arc()
     .innerRadius(outerRadius - outerRingWidth)
-    .outerRadius(outerRadius)
+    .outerRadius(outerRadius);
 
 var angle = (180 / data.length) * -1
 var pie = d3.layout.pie()
@@ -215,8 +228,19 @@ svg.append('circle')
     })
     .attr('r', function() {
         return (width / 4);
-    });
-        
+    })
+    .style({
+        fill: '#464646'
+    })
+
+/**
+ * Outer arc that spells out the data values 
+ */
+
+if(data.length < 2) {
+    pie.startAngle(-180 * (Math.PI/180)).endAngle( -180 * (Math.PI/180) + 2*Math.PI )
+};
+
 var g = svg.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 var path = g.selectAll(".donutArcs")
     .data(pie(data))
@@ -224,12 +248,20 @@ var path = g.selectAll(".donutArcs")
     .attr('id', function(d, i) { return 'arc' + i })
     .attr("class", "donutArcs")
     .attr("d", arc)
+    .style({
+        fill: '#464646',
+        'stroke-fill': '#464646'
+    })
     .each(function(d, i) {
-        var firstArcSection = /(^.+?)L/;
-        var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
-        newArc = newArc.replace(/,/g, " ");
+        if (data.length > 1) {
+            var firstArcSection = /(^.+?)L/;
+            var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+            newArc = newArc.replace(/,/g, " ");
+        } else {
+            var newArc = d3.select(this).attr("d");
+        };
 
-        if (d.endAngle > 90 * Math.PI / 180) {
+        if (d.endAngle > 90 * Math.PI / 180 && data.length > 1) {
             var startLoc = /M(.*?)A/,
                 middleLoc = /A(.*?)0 0 1/,
                 endLoc = /0 0 1 (.*?)$/;
@@ -255,18 +287,25 @@ g.selectAll(".donutText")
         var offset = 10;
         var textoffset = (computetext.node().getBBox().height / 4);
         var arcoffset = (outerRingWidth / 2); 
-        return (d.endAngle > 90 * Math.PI / 180) ? (arcoffset * -1) + textoffset : arcoffset + textoffset; 
+        return (d.endAngle > 90 * Math.PI / 180 && data.length > 1) ? (arcoffset * -1) + textoffset : arcoffset + textoffset; 
+    })
+    .style({
+        fill: '#fff'
     })
     .append("textPath")
-    .attr("startOffset", "50%")
+    .attr("startOffset", function() { return data.length < 2 ? "550" : '50%'})
     .style("text-anchor", "middle")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
+branchtree.align('middle')
+
 d3.select('#logo svg').call(branchtree)
+/*
+branchtree.animateDuration(2000);
 setInterval(function() {
     d3.select('#logo svg').call(branchtree)
-}, 2000)
+}, 2100)*/
 },{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
 !function() {
   var d3 = {
