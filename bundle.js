@@ -1,8 +1,148 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var d3 = require('d3');
 
+var w = 230, h = 230;
+
+// Tree configuration
+var branches = [];
+var maxDepth = 5;
+
+var seed = {
+    i: 0,
+    x: w / 2,
+    y: h,
+    a: 0,
+    l: h / 5,
+    d: 0
+}; // a = angle, l = length, d = depth
+var da = 0.6; // Angle delta
+var dl = 0.8; // Length delta (factor)
+var ar = 0.3; // Randomness
+var svg;
+
+function branch(b) {
+    var end = endPt(b),
+        daR, newB;
+    branches.push(b);
+
+    if (b.d === maxDepth)
+        return;
+
+    // Left branch
+    daR = ar * Math.random() - ar * 0.5;
+    newB = {
+        i: branches.length,
+        x: end.x,
+        y: end.y,
+        a: b.a - da + daR,
+        l: b.l * dl,
+        d: b.d + 1,
+        parent: b.i
+    };
+    branch(newB);
+
+    // Right branch
+    daR = ar * Math.random() - ar * 0.5;
+    newB = {
+        i: branches.length,
+        x: end.x,
+        y: end.y,
+        a: b.a + da + daR,
+        l: b.l * dl,
+        d: b.d + 1,
+        parent: b.i
+    };
+    branch(newB);
+};
+
+function endPt(b) {
+    // Return endpoint of branch
+    var x = b.x + b.l * Math.sin(b.a);
+    var y = b.y - b.l * Math.cos(b.a);
+    return {
+        x: x,
+        y: y
+    };
+};
+
+function x1(d) {
+    return d.x;
+}
+
+function y1(d) {
+    return d.y;
+}
+
+function x2(d) {
+    return endPt(d).x;
+}
+
+function y2(d) {
+    return endPt(d).y;
+}
+
+function create() {
+    setTimeout(function() {
+        svg = d3.select('.innergroup');
+
+        branches = [];
+        branch(seed);
+
+        svg.selectAll('line')
+            .data(branches)
+            .enter()
+            .append('line')
+            .attr('class', 'branchline')
+            .style('stroke-width', function(d) {
+                return parseInt(maxDepth + 2 - d.d) + 'px';
+            })
+            .attr('id', function(d) {
+                return 'id-' + d.i;
+            })
+            .transition()
+            .duration(500)
+            .delay(function(d, i) {
+                return i * 10;
+            })
+            .attr('x1', x1)
+            .attr('y1', y1)
+            .attr('x2', x2)
+            .attr('y2', y2);
+
+        //setTimeout(update, 2000);
+
+    }, 400)
+};
+
+var timeoutid;
+var update = function() {
+
+    branches = [];
+    branch(seed);
+
+    svg.selectAll('line')
+        .data(branches)
+        .transition()
+        .duration(2500)
+        .attr('x1', x1)
+        .attr('y1', y1)
+        .attr('x2', x2)
+        .attr('y2', y2)
+
+    timeoutid = setTimeout(update, 4000)
+
+};
+
+var kill = function() {
+    clearTimeout(timeoutid);
+};
+
+module.exports = create;
+},{"d3":3}],2:[function(require,module,exports){
+var d3 = require('d3');
+var tree = require('./lib/branchtree')
+
 var inputw = 500, inputh = 500;
-var arcscale = d3.scale.linear().domain([0, 100]).range([0, 2 * Math.PI]);
 
 var margin = {
     top: 20,
@@ -14,8 +154,10 @@ var margin = {
 var width = inputw - margin.left - margin.right;
 var height = inputh - margin.top - margin.bottom;
 
-var outerRadius = (width / 2) - 15;
-var outerRingWidth = 80;
+var outerRadius = (width / 2) - 10;
+var outerRingWidth = width / 6;
+
+var data = ['Innovate', 'Collaborate', 'Evangelize'];
 
 var svg = d3.select("#logo").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -23,75 +165,97 @@ var svg = d3.select("#logo").append("svg")
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var toparc = d3.svg.arc()
-    .innerRadius(outerRadius - outerRingWidth)
-    .outerRadius(outerRadius)
-    .startAngle(arcscale(75))
-    .endAngle(arcscale(125));
-    
-var bottomarc = d3.svg.arc()
-    .innerRadius(outerRadius - outerRingWidth)
-    .outerRadius(outerRadius)
-    .startAngle(arcscale(75))
-    .endAngle(arcscale(25));
+var computetext = svg.append('text').style('fill', 'none').text('Test');
 
+var arc = d3.svg.arc()
+    .innerRadius(outerRadius - outerRingWidth)
+    .outerRadius(outerRadius)
+
+var angle = (180 / data.length) * -1
+var pie = d3.layout.pie()
+    .startAngle(angle * Math.PI / 180)
+    .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
+    .value(function(d) { return d.length < 3 ? 1 : data.length; })
+    .padAngle(.02)
+    .sort(null);
 
 svg.append('circle')
-.attr('class', 'base')
-.attr('cx', function() {
-    return width / 2;
-})
-.attr('cy', function() {
-    return height / 2;
-})
-.attr('r', function() {
-    return width / 2;
-});
+    .attr('class', 'base')
+    .attr('cx', function() {
+        return width / 2;
+    })
+    .attr('cy', function() {
+        return height / 2;
+    })
+    .attr('r', function() {
+        return width / 2;
+    });
 
-svg.append('circle') 
-.attr('class', 'innercircle')
-.attr('cx', function() {
-    return width / 2;
-})
-.attr('cy', function() {
-    return height / 2;
-})
-.attr('r', function() {
-    return (width / 4);
-});
+svg.append('circle')
+    .attr('class', 'innercircle')
+    .attr('cx', function() {
+        return width / 2;
+    })
+    .attr('cy', function() {
+        return height / 2;
+    })
+    .attr('r', function() {
+        return (width / 2);
+    });
 
-/**
- * Top Arc
- */
-svg.append("path")
-.attr("id", "toparc")
-.attr("d", toparc)
-.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-    
-svg.append("text")
-.attr("x", 8)
-.attr("dy", 28)
-.append("textPath")
-.attr("class", "textpath")
-.attr("xlink:href", "#toparc")
-.text("Hello, curved textPath!");
+var inner = svg.append('g')
+    .attr('class', 'innergroup')
+    .attr("transform", "translate(" + width / 4 + "," + 90 + ")");
 
-/**
- * Bottom Arc
- */
-svg.append("path")
-.attr("id", "toparc")
-.attr("d", toparc)
-.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-    
-svg.append("text")
-.attr("x", 8)
-.attr("dy", 28)
-.append("textPath")
-.attr("class", "textpath")
-.attr("xlink:href", "#toparc")
-.text("Hello, curved textPath!");    
-},{"d3":2}],2:[function(require,module,exports){
+var g = svg.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var path = g.selectAll(".donutArcs")
+    .data(pie(data))
+    .enter().append("path")
+    .attr('id', function(d, i) { return 'arc' + i })
+    .attr("class", "donutArcs")
+    .attr("d", arc)
+    .each(function(d, i) {
+        var firstArcSection = /(^.+?)L/;
+        var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+        newArc = newArc.replace(/,/g, " ");
+
+        if (d.endAngle > 90 * Math.PI / 180) {
+            var startLoc = /M(.*?)A/,
+                middleLoc = /A(.*?)0 0 1/,
+                endLoc = /0 0 1 (.*?)$/;
+            var newStart = endLoc.exec(newArc)[1];
+            var newEnd = startLoc.exec(newArc)[1];
+            var middleSec = middleLoc.exec(newArc)[1];
+
+            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+        };
+
+        svg.append("path")
+            .attr("class", "hiddenDonutArcs")
+            .attr("id", "donutArc" + i)
+            .attr("d", newArc)
+            .style("fill", "none");
+    });
+
+g.selectAll(".donutText")
+    .data(pie(data))
+    .enter().append("text")
+    .attr("class", "donutText")
+    .attr("dy", function(d, i) {
+        var offset = 10;
+        var textoffset = (computetext.node().getBBox().height / 4);
+        var arcoffset = (outerRingWidth / 2); 
+        return (d.endAngle > 90 * Math.PI / 180) ? (arcoffset * -1) + textoffset : arcoffset + textoffset; 
+    })
+    .append("textPath")
+    .attr("startOffset", "50%")
+    .style("text-anchor", "middle")
+    .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
+    .text(function(d) { return d.data; });
+
+tree(); 
+},{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.16"
@@ -9646,4 +9810,4 @@ svg.append("text")
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}]},{},[1]);
+},{}]},{},[2]);
