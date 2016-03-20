@@ -1,7 +1,7 @@
 var d3 = require('d3');
-var branchtree = require('./lib/branchtree');
+var branchtree = require('./lib/branchtree')();
 
-var inputw = 600, inputh = 600;
+var inputw = 400, inputh = 400;
 
 var margin = {
     top: 20,

@@ -1,11 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var d3 = require('d3');
 
-var branchtree = (function branchtree() {
+function branchtree() {
 
     var element, w, h, seed;
     var branches = [];
     var depth = 5;
+    var minLineWeight = 1;
 
     var da = 0.6; // Angle delta
     var dl = 0.8; // Length delta (factor)
@@ -65,7 +66,6 @@ var branchtree = (function branchtree() {
             element = d3.select(this);
             w = parseInt(element.style('width'), 10); 
             h = parseInt(element.style('height'), 10);
-            console.log(w, h)
             seed = {
                 i: 0,
                 x: w / 2,
@@ -84,7 +84,7 @@ var branchtree = (function branchtree() {
                 .append('line')
                 .attr('class', 'branchline')
                 .style('stroke-width', function(d) {
-                    return parseInt(depth + 1 - d.d) + 'px';
+                    return parseInt(depth + minLineWeight - d.d) + 'px';
                 })
                 .style('stroke', '#fff')
                 .attr('id', function(d) {
@@ -96,17 +96,38 @@ var branchtree = (function branchtree() {
                 .attr('y2', y2);
         });
     };
+    
+    /**
+     * Configuration methods
+     */
+    tree.minLineWeight = function(_) {
+        if(!arguments) return minLineWeight;
+        minLineWeight = _;
+        return tree;
+    };
+    
+    tree.randomness = function(_) {
+        if(!arguments) return ar;
+        ar = _;
+        return tree;
+    };
+    
+    tree.depth = function(_) {
+        if(!arguments) return depth;
+        depth = _;
+        return tree;
+    };
 
     return tree;
     
-})();
+};
 
 module.exports = branchtree;
 },{"d3":3}],2:[function(require,module,exports){
 var d3 = require('d3');
-var branchtree = require('./lib/branchtree');
+var branchtree = require('./lib/branchtree')();
 
-var inputw = 600, inputh = 600;
+var inputw = 400, inputh = 400;
 
 var margin = {
     top: 20,
