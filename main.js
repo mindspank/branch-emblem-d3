@@ -1,5 +1,5 @@
 var d3 = require('d3');
-var tree = require('./lib/branchtree')
+var branchtree = require('./lib/branchtree');
 
 var inputw = 400, inputh = 400;
 
@@ -36,7 +36,7 @@ var pie = d3.layout.pie()
     .startAngle(angle * Math.PI / 180)
     .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
     .value(function(d) { return d.length < 3 ? 1 : data.length; })
-    //.padAngle(.02)
+    .padAngle(.02)
     .sort(null);
 
 /**
@@ -120,5 +120,4 @@ g.selectAll(".donutText")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
-
-tree();
+d3.select('#logo svg').call(branchtree)

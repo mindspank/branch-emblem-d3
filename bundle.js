@@ -1,147 +1,110 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var d3 = require('d3');
 
-var w = 400, h = 400;
+var branchtree = (function branchtree() {
 
-// Tree configuration
-var branches = [];
-var maxDepth = 5;
+    var element, w, h, seed;
+    var branches = [];
+    var depth = 5;
 
-var seed = {
-    i: 0,
-    x: w / 2,
-    y: (h / 3) * 2,
-    a: 0,
-    l: h / 11,
-    d: 0
-}; // a = angle, l = length, d = depth
-var da = 0.6; // Angle delta
-var dl = 0.8; // Length delta (factor)
-var ar = 0.3; // Randomness
-var svg;
+    var da = 0.6; // Angle delta
+    var dl = 0.8; // Length delta (factor)
+    var ar = 0.3; // Randomness
 
-function branch(b) {
-    var end = endPt(b),
-        daR, newB;
-    branches.push(b);
+    function branch(b) {
+        var end = endPt(b), daR, newB;
+        branches.push(b);
 
-    if (b.d === maxDepth)
-        return;
+        if (b.d === depth) return;
 
-    // Left branch
-    daR = ar * Math.random() - ar * 0.5;
-    newB = {
-        i: branches.length,
-        x: end.x,
-        y: end.y,
-        a: b.a - da + daR,
-        l: b.l * dl,
-        d: b.d + 1,
-        parent: b.i
+        // Left branch
+        daR = ar * Math.random() - ar * 0.5;
+        newB = {
+            i: branches.length,
+            x: end.x,
+            y: end.y,
+            a: b.a - da + daR,
+            l: b.l * dl,
+            d: b.d + 1,
+            parent: b.i
+        };
+        branch(newB);
+
+        // Right branch
+        daR = ar * Math.random() - ar * 0.5;
+        newB = {
+            i: branches.length,
+            x: end.x,
+            y: end.y,
+            a: b.a + da + daR,
+            l: b.l * dl,
+            d: b.d + 1,
+            parent: b.i
+        };
+        branch(newB);
     };
-    branch(newB);
 
-    // Right branch
-    daR = ar * Math.random() - ar * 0.5;
-    newB = {
-        i: branches.length,
-        x: end.x,
-        y: end.y,
-        a: b.a + da + daR,
-        l: b.l * dl,
-        d: b.d + 1,
-        parent: b.i
+    // Endpoint
+    function endPt(b) {
+        var x = b.x + b.l * Math.sin(b.a);
+        var y = b.y - b.l * Math.cos(b.a);
+        return {
+            x: x,
+            y: y
+        };
     };
-    branch(newB);
-};
 
-function endPt(b) {
-    // Return endpoint of branch
-    var x = b.x + b.l * Math.sin(b.a);
-    var y = b.y - b.l * Math.cos(b.a);
-    return {
-        x: x,
-        y: y
+    // Accessors
+    function x1(d) { return d.x; };
+    function y1(d) { return d.y; };
+    function x2(d) { return endPt(d).x; };
+    function y2(d) { return endPt(d).y; };
+
+    function tree(selection) {
+        selection.each(function(d) {
+            element = d3.select(this);
+            w = parseInt(element.style('width'), 10); 
+            h = parseInt(element.style('height'), 10);
+            console.log(w, h)
+            seed = {
+                i: 0,
+                x: w / 2,
+                y: (h / 3) * 2,
+                a: 0,
+                l: h / 11,
+                d: 0
+            };            
+            
+            branches = [];
+            branch(seed);
+
+            element.selectAll('line')
+                .data(branches)
+                .enter()
+                .append('line')
+                .attr('class', 'branchline')
+                .style('stroke-width', function(d) {
+                    return parseInt(depth + 1 - d.d) + 'px';
+                })
+                .style('stroke', '#fff')
+                .attr('id', function(d) {
+                    return 'id-' + d.i;
+                })
+                .attr('x1', x1)
+                .attr('y1', y1)
+                .attr('x2', x2)
+                .attr('y2', y2);
+        });
     };
-};
 
-function x1(d) {
-    return d.x;
-}
+    return tree;
+    
+})();
 
-function y1(d) {
-    return d.y;
-}
-
-function x2(d) {
-    return endPt(d).x;
-}
-
-function y2(d) {
-    return endPt(d).y;
-}
-
-function create() {
-    setTimeout(function() {
-        svg = d3.select('#logo svg');
-
-        branches = [];
-        branch(seed);
-
-        svg.selectAll('line')
-            .data(branches)
-            .enter()
-            .append('line')
-            .attr('class', 'branchline')
-            .style('stroke-width', function(d) {
-                return parseInt(maxDepth + 1 - d.d) + 'px';
-            })
-            .style('stroke', '#fff')
-            .attr('id', function(d) {
-                return 'id-' + d.i;
-            })
-            .transition()
-            .duration(500)
-            .delay(function(d, i) {
-                return i * 10;
-            })
-            .attr('x1', x1)
-            .attr('y1', y1)
-            .attr('x2', x2)
-            .attr('y2', y2);
-
-        setTimeout(update, 2000);
-
-    }, 400)
-};
-
-var timeoutid;
-var update = function() {
-
-    branches = [];
-    branch(seed);
-
-    svg.selectAll('line')
-        .data(branches)
-        .transition()
-        .duration(2500)
-        .attr('x1', x1)
-        .attr('y1', y1)
-        .attr('x2', x2)
-        .attr('y2', y2)
-
-    timeoutid = setTimeout(update, 4000)
-
-};
-
-var kill = function() {
-    clearTimeout(timeoutid);
-};
-
-module.exports = create;
+module.exports = branchtree;
 },{"d3":3}],2:[function(require,module,exports){
 var d3 = require('d3');
-var tree = require('./lib/branchtree')
+var branchtree = require('./lib/branchtree');
 
 var inputw = 400, inputh = 400;
 
@@ -178,7 +141,7 @@ var pie = d3.layout.pie()
     .startAngle(angle * Math.PI / 180)
     .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
     .value(function(d) { return d.length < 3 ? 1 : data.length; })
-    //.padAngle(.02)
+    .padAngle(.02)
     .sort(null);
 
 /**
@@ -262,8 +225,7 @@ g.selectAll(".donutText")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
-
-tree();
+d3.select('#logo svg').call(branchtree)
 },{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
 !function() {
   var d3 = {
