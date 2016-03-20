@@ -3,12 +3,12 @@ var d3 = require('d3');
 
 function branchtree() {
 
-    var element, w, h, seed;
+    var seed;
     var branches = [];
     var depth = 5;
     var minLineWeight = 1;
     var animateDuration = 600;
-    
+
     var align = 'middle';
     var alignSettings = {
         middle: function() { return (h / 3) * 2; },
@@ -70,9 +70,20 @@ function branchtree() {
 
     function tree(selection) {
         selection.each(function(d) {
-            element = d3.select(this);
+            
+            var element = d3.select(this);
+            
             w = parseInt(element.style('width'), 10);
             h = parseInt(element.style('height'), 10);
+
+            var svg = element.select("svg");
+            
+            if (svg.empty()) {
+                svg = element.append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+            };
+
             seed = {
                 i: 0,
                 x: w / 2,
@@ -84,8 +95,9 @@ function branchtree() {
 
             branches = [];
             branch(seed);
-            
-            var lines = element.selectAll('.branchline').data(branches, function(d) { return d.i; });
+
+            var lines = svg.selectAll('.branchline')
+                .data(branches, function(d) { return d.i; });
 
             lines.enter()
                 .append('line')
@@ -95,9 +107,9 @@ function branchtree() {
                 })
                 .style('stroke', '#fff')
                 .attr('id', function(d) {
-                    return 'id-' + d.i;
+                    return 'id' + d.i;
                 });
-                
+
             lines.transition()
                 .ease("linear")
                 .duration(animateDuration)
@@ -105,7 +117,7 @@ function branchtree() {
                 .attr('y1', y1)
                 .attr('x2', x2)
                 .attr('y2', y2);
-                
+
         });
     };
 
@@ -136,7 +148,7 @@ function branchtree() {
         if (!arguments) return animateDuration;
         animateDuration = _;
         return tree;
-    };    
+    };
     tree.depth = function(_) {
         if (!arguments) return depth;
         depth = _;
@@ -147,7 +159,7 @@ function branchtree() {
         align = _;
         return tree;
     };
-    
+
     return tree;
 
 };
@@ -301,11 +313,7 @@ g.selectAll(".donutText")
 branchtree.align('middle')
 
 d3.select('#logo svg').call(branchtree)
-/*
-branchtree.animateDuration(2000);
-setInterval(function() {
-    d3.select('#logo svg').call(branchtree)
-}, 2100)*/
+
 },{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
 !function() {
   var d3 = {

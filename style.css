@@ -11,3 +11,8 @@ svg text {
     letter-spacing: 10px;
     text-transform: uppercase;
 }
+#tree {
+    width: 400px;
+    height: 400px;
+    background: #ccc;
+}

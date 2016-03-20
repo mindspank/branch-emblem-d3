@@ -145,8 +145,3 @@ g.selectAll(".donutText")
 branchtree.align('middle')
 
 d3.select('#logo svg').call(branchtree)
-/*
-branchtree.animateDuration(2000);
-setInterval(function() {
-    d3.select('#logo svg').call(branchtree)
-}, 2100)*/
