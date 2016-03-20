@@ -121,3 +121,6 @@ g.selectAll(".donutText")
     .text(function(d) { return d.data; });
 
 d3.select('#logo svg').call(branchtree)
+setInterval(function() {
+    d3.select('#logo svg').call(branchtree)
+}, 2000)
