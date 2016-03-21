@@ -399,13 +399,69 @@ function Emblem(element, data) {
     data = _;
     return em;
   };
-  
   em.arcPadding = function(_) {
       if (!arguments) return textarc.padding();
       textarc.padding(_)
       return em;
-  }
+  };
   
+  /**
+   * Tree config
+   */
+  em.treeRandomness = function(_) {
+      if (!arguments) return branchtree.randomness();
+      branchtree.randomness(_)
+      return em;
+  };
+  
+  /**
+   * Inner circle config
+   */
+  em.innerWidth = function(_) {
+      if (!arguments) return innercircle.width();
+      innercircle.width(_)
+      return em;      
+  };
+  em.innerRadiusModifer = function(_) {
+      if (!arguments) return innercircle.radiusModifer();
+      innercircle.radiusModifer(_)
+      return em;      
+  };  
+  em.innerSetStyles = function(_) {
+      if (!arguments) return innercircle.setStyles();
+      innercircle.setStyles(_)
+      return em;      
+  };
+  em.innerHeight = function(_) {
+      if (!arguments) return innercircle.height();
+      innercircle.height(_)
+      return em;      
+  };  
+
+  /**
+   * Base circle config
+   */
+  em.baseWidth = function(_) {
+      if (!arguments) return basecircle.width();
+      innercircle.width(_)
+      return em;      
+  };
+  em.baseRadiusModifer = function(_) {
+      if (!arguments) return basecircle.radiusModifer();
+      innercircle.radiusModifer(_)
+      return em;      
+  };  
+  em.baseSetStyles = function(_) {
+      if (!arguments) return basecircle.setStyles();
+      innercircle.setStyles(_)
+      return em;      
+  };
+  em.baseHeight = function(_) {
+      if (!arguments) return basecircle.height();
+      innercircle.height(_)
+      return em;      
+  };  
+    
   return em;
     
 };
@@ -416,9 +472,14 @@ var d3 = require('d3');
 var Emblem = require('./lib/emblem');
 
 
-var emblem = Emblem('#logo', ['Innovate', 'Collaborate', 'Evangelize']);
-emblem();
+var emblem = Emblem('#logo', ['Nick', 'Brian', 'Alex']);
 
+emblem
+.arcPadding(0.1)
+.treeRandomness(0)
+.innerRadiusModifer(3);
+
+emblem();
 },{"./lib/emblem":4,"d3":6}],6:[function(require,module,exports){
 !function() {
   var d3 = {
