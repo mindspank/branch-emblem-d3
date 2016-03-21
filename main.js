@@ -1,5 +1,6 @@
 var d3 = require('d3');
 var branchtree = require('./lib/branchtree')();
+var Circle = require('./lib/circle');
 
 var inputw = 400, inputh = 400;
 
@@ -42,40 +43,21 @@ var pie = d3.layout.pie()
 /**
  * The base circle
  */
-svg.append('circle')
-    .attr('class', 'base')
-    .attr('cx', function() {
-        return width / 2;
-    })
-    .attr('cy', function() {
-        return height / 2;
-    })
-    .attr('r', function() {
-        return width / 2;
-    })
-    .style({
-        stroke: '#464646',
-        'stroke-width': '5px',
-        fill: '#fff'
-    })
+
+var basecircle = new Circle(width, height, 2, {
+    stroke: '#464646',
+    'stroke-width': '5px',
+    fill: '#fff'
+});
+svg.call(basecircle);
 
 /**
  * Inner Circle / Background for tree
  */
-svg.append('circle')
-    .attr('class', 'innercircle')
-    .attr('cx', function() {
-        return width / 2;
-    })
-    .attr('cy', function() {
-        return height / 2;
-    })
-    .attr('r', function() {
-        return (width / 4);
-    })
-    .style({
-        fill: '#464646'
-    })
+var innercircle = new Circle(width, height, 2, {
+    fill: '#464646'
+})
+svg.call(innercircle)
 
 /**
  * Outer arc that spells out the data values 
@@ -141,7 +123,5 @@ g.selectAll(".donutText")
     .style("text-anchor", "middle")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
-
-branchtree.align('middle')
 
 d3.select('#logo svg').call(branchtree)

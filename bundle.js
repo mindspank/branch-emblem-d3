@@ -8,6 +8,7 @@ function branchtree() {
     var depth = 5;
     var minLineWeight = 1;
     var animateDuration = 600;
+    var linelength = 5;
 
     var align = 'middle';
     var alignSettings = {
@@ -68,7 +69,7 @@ function branchtree() {
     function x2(d) { return endPt(d).x; };
     function y2(d) { return endPt(d).y; };
 
-    function tree(selection) {
+    var tree = function(selection) {
         selection.each(function(d) {
             
             var element = d3.select(this);
@@ -89,7 +90,7 @@ function branchtree() {
                 x: w / 2,
                 y: alignSettings[align](),
                 a: 0,
-                l: align === 'middle' ? h / 11 : h / depth,
+                l: align === 'middle' ? h / 11 : (h / 100 ) * linelength,
                 d: 0
             };
 
@@ -124,7 +125,7 @@ function branchtree() {
     /**
      * Configuration methods
      */
-    tree.minLineWeight = function(_) {
+    tree.prototype.minLineWeight = function(_) {
         if (!arguments) return minLineWeight;
         minLineWeight = _;
         return tree;
@@ -134,7 +135,7 @@ function branchtree() {
         da = _;
         return tree;
     };
-    tree.length = function(_) {
+    tree.lengthdelta = function(_) {
         if (!arguments) return dl;
         dl = _;
         return tree;
@@ -159,15 +160,70 @@ function branchtree() {
         align = _;
         return tree;
     };
-
+    tree.linelength = function(_) {
+        if (!arguments) return linelength;
+        linelength = _;
+        return tree;
+    };
     return tree;
 
 };
 
 module.exports = branchtree;
-},{"d3":3}],2:[function(require,module,exports){
+},{"d3":4}],2:[function(require,module,exports){
+var d3 = require('d3');
+
+function circle(w, h, r, styles) {
+
+    var width = w || 400;
+    var height = h || 400;
+    var r = r || 2;
+    var styles = styles || {};
+
+    function c(selection) {
+        selection.each(function(d) {
+            d3.select(this).append('circle')
+                .attr('cx', function() { return width / 2 })
+                .attr('cy', function() { return height / 2 })
+                .attr('r', function() { return width / r })
+                .style(styles);
+        })
+    };
+    
+    c.setStyle = function(_) {
+      if (!arguments) return styles;
+      
+      Object.keys(_).forEach(function(d) {
+          styles[d] = _[d]
+      });
+      
+      return c;  
+    };
+    c.width = function(_) {
+        if (!arguments) return width;
+        width = _;
+        return c;
+    };
+    c.height = function(_) {
+        if (!arguments) return height;
+        height = _;
+        return c;
+    };
+    c.radiusModifer = function(_) {
+        if (!arguments) return r;
+        r = _;
+        return c;
+    };
+    
+    return c
+
+};
+
+module.exports = circle;
+},{"d3":4}],3:[function(require,module,exports){
 var d3 = require('d3');
 var branchtree = require('./lib/branchtree')();
+var Circle = require('./lib/circle');
 
 var inputw = 400, inputh = 400;
 
@@ -210,40 +266,21 @@ var pie = d3.layout.pie()
 /**
  * The base circle
  */
-svg.append('circle')
-    .attr('class', 'base')
-    .attr('cx', function() {
-        return width / 2;
-    })
-    .attr('cy', function() {
-        return height / 2;
-    })
-    .attr('r', function() {
-        return width / 2;
-    })
-    .style({
-        stroke: '#464646',
-        'stroke-width': '5px',
-        fill: '#fff'
-    })
+
+var basecircle = new Circle(width, height, 2, {
+    stroke: '#464646',
+    'stroke-width': '5px',
+    fill: '#fff'
+});
+svg.call(basecircle);
 
 /**
  * Inner Circle / Background for tree
  */
-svg.append('circle')
-    .attr('class', 'innercircle')
-    .attr('cx', function() {
-        return width / 2;
-    })
-    .attr('cy', function() {
-        return height / 2;
-    })
-    .attr('r', function() {
-        return (width / 4);
-    })
-    .style({
-        fill: '#464646'
-    })
+var innercircle = new Circle(width, height, 2, {
+    fill: '#464646'
+})
+svg.call(innercircle)
 
 /**
  * Outer arc that spells out the data values 
@@ -310,11 +347,8 @@ g.selectAll(".donutText")
     .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
     .text(function(d) { return d.data; });
 
-branchtree.align('middle')
-
 d3.select('#logo svg').call(branchtree)
-
-},{"./lib/branchtree":1,"d3":3}],3:[function(require,module,exports){
+},{"./lib/branchtree":1,"./lib/circle":2,"d3":4}],4:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.16"
@@ -9869,4 +9903,4 @@ d3.select('#logo svg').call(branchtree)
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}]},{},[2]);
+},{}]},{},[3]);
