@@ -1,6 +1,132 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var d3 = require('d3');
 
+function textarc() {
+
+    var outerRadius,
+        outerRingWidth,
+        arc,
+        g,
+        text,
+        path,
+        pie,
+        angle,
+        width,
+        height,
+        element,
+        padding = 0.05,
+        style = {};
+
+    function a(selection) {
+        selection.each(function(data) {
+
+            element = d3.select(this);
+
+            width = this.getBBox().width;
+            height = this.getBBox().height;
+            
+            var computetext = element.append('text').style('fill', 'none').text('Test');
+            var outerRadius = (width / 2) - (computetext.node().getBBox().height / 4);
+            var outerRingWidth = width / 6;
+
+            arc = d3.svg.arc()
+                .innerRadius(outerRadius - outerRingWidth)
+                .outerRadius(outerRadius);
+            
+            angle = (180 / data.length) * -1;
+            pie = d3.layout.pie()
+                .startAngle(angle * Math.PI / 180)
+                .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
+                .value(function(d) { return d.length < 3 ? 1 : data.length; })
+                .padAngle(padding)
+                .sort(null);
+            
+            if(data.length < 2) {
+                pie.startAngle(-180 * (Math.PI/180)).endAngle( -180 * (Math.PI/180) + 2*Math.PI )
+            };
+            
+            
+            g = element.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            path = g.selectAll(".donutArcs").data(pie(data));
+            
+            path.enter()
+                .append("path")
+                .attr('id', function(d, i) { return 'arc' + i })
+                .attr("class", "donutArcs")
+                .attr("d", arc)
+                .style({
+                    fill: '#464646',
+                    'stroke-fill': '#464646'
+                });
+                
+            path.each(function(d, i) {
+                if (data.length > 1) {
+                    var firstArcSection = /(^.+?)L/;
+                    var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+                    newArc = newArc.replace(/,/g, " ");
+                } else {
+                    var newArc = d3.select(this).attr("d");
+                };
+
+                if (d.endAngle > 90 * Math.PI / 180 && data.length > 1) {
+                    var startLoc = /M(.*?)A/,
+                        middleLoc = /A(.*?)0 0 1/,
+                        endLoc = /0 0 1 (.*?)$/;
+                    var newStart = endLoc.exec(newArc)[1];
+                    var newEnd = startLoc.exec(newArc)[1];
+                    var middleSec = middleLoc.exec(newArc)[1];
+
+                    newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                };
+
+                g.append("path")
+                    .attr("class", "hiddenDonutArcs")
+                    .attr("id", "donutArc" + i)
+                    .attr("d", newArc)
+                    .style("fill", "none");
+            });         
+
+            text = g.selectAll(".donutText")
+                .data(pie(data))
+                .enter().append("text")
+                .attr("class", "donutText")
+                .attr("dy", function(d, i) {
+                    var offset = 10;
+                    var textoffset = (computetext.node().getBBox().height / 4);
+                    var arcoffset = (outerRingWidth / 2); 
+                    return (d.endAngle > 90 * Math.PI / 180 && data.length > 1) ? (arcoffset * -1) + textoffset : arcoffset + textoffset; 
+                })
+                .style({
+                    fill: '#fff'
+                })
+                .append("textPath")
+                .attr("startOffset", function() { return data.length < 2 ? "550" : '50%'})
+                .style("text-anchor", "middle")
+                .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
+                .text(function(d) { return d.data; });            
+
+        })
+    }
+    
+    a.setText = function(_) {
+                
+        return a;
+    }
+
+    a.padding = function(_) {
+        if (!arguments) return padding;
+        padding = _;
+        return a;
+    };
+
+    return a;
+
+}
+
+module.exports = textarc;
+},{"d3":6}],2:[function(require,module,exports){
+var d3 = require('d3');
+
 function branchtree() {
 
     var seed;
@@ -71,19 +197,9 @@ function branchtree() {
 
     var tree = function(selection) {
         selection.each(function(d) {
-            
-            var element = d3.select(this);
-            
-            w = parseInt(element.style('width'), 10);
-            h = parseInt(element.style('height'), 10);
-
-            var svg = element.select("svg");
-            
-            if (svg.empty()) {
-                svg = element.append("svg")
-                    .attr("width", w)
-                    .attr("height", h);
-            };
+                        
+            w = this.getBBox().width;
+            h = this.getBBox().height;
 
             seed = {
                 i: 0,
@@ -96,8 +212,8 @@ function branchtree() {
 
             branches = [];
             branch(seed);
-
-            var lines = svg.selectAll('.branchline')
+            console.log(d3.select(this))
+            var lines = d3.select(this).selectAll('.branchline')
                 .data(branches, function(d) { return d.i; });
 
             lines.enter()
@@ -170,7 +286,7 @@ function branchtree() {
 };
 
 module.exports = branchtree;
-},{"d3":4}],2:[function(require,module,exports){
+},{"d3":6}],3:[function(require,module,exports){
 var d3 = require('d3');
 
 function circle(w, h, r, styles) {
@@ -220,135 +336,90 @@ function circle(w, h, r, styles) {
 };
 
 module.exports = circle;
-},{"d3":4}],3:[function(require,module,exports){
+},{"d3":6}],4:[function(require,module,exports){
 var d3 = require('d3');
-var branchtree = require('./lib/branchtree')();
-var Circle = require('./lib/circle');
+var branchtree = require('./branchtree')();
+var Circle = require('./circle');
+var textarc = require('./arc')();
 
-var inputw = 400, inputh = 400;
+function Emblem(element, data) {
+  if(!arguments) return new Error('Needs a DOM node')
+  
+  var svg, g;
+  
+  var element = d3.select(element);
+  var data = data;
 
-var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 20
+  var margin = {
+    top: 10,
+    right: 10,
+    bottom: 10,
+    left: 10
+  };
+  
+  var width = parseInt(element.style('width'), 10) - margin.left - margin.right;
+  var height = parseInt(element.style('height'), 10) - margin.top - margin.bottom;
+  
+  /**
+   * The base circle
+   */
+  var basecircle = new Circle(width, height, 2, {
+      stroke: '#464646',
+      'stroke-width': '5px',
+      fill: '#fff'
+  });
+  /**
+   * Inner circle
+   */
+  var innercircle = new Circle(width, height, 4, {
+      fill: '#464646'
+  });
+    
+  function em() {
+  
+    var svg = element.html('').append("svg")
+        .attr('width', width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+      
+    g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    g.datum(data)
+        .call(basecircle)
+        .call(innercircle)
+        .call(branchtree)
+        .call(textarc);
+      
+  };
+  
+  em.redraw = function() {
+      return em();
+  };
+  
+  em.setText = function(_) {
+    data = _;
+    return em;
+  };
+  
+  em.arcPadding = function(_) {
+      if (!arguments) return textarc.padding();
+      textarc.padding(_)
+      return em;
+  }
+  
+  return em;
+    
 };
 
-var width = inputw - margin.left - margin.right;
-var height = inputh - margin.top - margin.bottom;
+module.exports = Emblem;
+},{"./arc":1,"./branchtree":2,"./circle":3,"d3":6}],5:[function(require,module,exports){
+var d3 = require('d3');
+var Emblem = require('./lib/emblem');
 
 
-var data = ['Nick', 'Webster'];
+var emblem = Emblem('#logo', ['Innovate', 'Collaborate', 'Evangelize']);
+emblem();
 
-var svg = d3.select("#logo").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var computetext = svg.append('text').style('fill', 'none').text('Test');
-
-var outerRadius = (width / 2) - (computetext.node().getBBox().height / 4);
-var outerRingWidth = width / 6;
-
-var arc = d3.svg.arc()
-    .innerRadius(outerRadius - outerRingWidth)
-    .outerRadius(outerRadius);
-
-var angle = (180 / data.length) * -1
-var pie = d3.layout.pie()
-    .startAngle(angle * Math.PI / 180)
-    .endAngle(angle * Math.PI / 180 + 2 * Math.PI)
-    .value(function(d) { return d.length < 3 ? 1 : data.length; })
-    .padAngle(.02)
-    .sort(null);
-
-/**
- * The base circle
- */
-
-var basecircle = new Circle(width, height, 2, {
-    stroke: '#464646',
-    'stroke-width': '5px',
-    fill: '#fff'
-});
-svg.call(basecircle);
-
-/**
- * Inner Circle / Background for tree
- */
-var innercircle = new Circle(width, height, 2, {
-    fill: '#464646'
-})
-svg.call(innercircle)
-
-/**
- * Outer arc that spells out the data values 
- */
-
-if(data.length < 2) {
-    pie.startAngle(-180 * (Math.PI/180)).endAngle( -180 * (Math.PI/180) + 2*Math.PI )
-};
-
-var g = svg.append('g').attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-var path = g.selectAll(".donutArcs")
-    .data(pie(data))
-    .enter().append("path")
-    .attr('id', function(d, i) { return 'arc' + i })
-    .attr("class", "donutArcs")
-    .attr("d", arc)
-    .style({
-        fill: '#464646',
-        'stroke-fill': '#464646'
-    })
-    .each(function(d, i) {
-        if (data.length > 1) {
-            var firstArcSection = /(^.+?)L/;
-            var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
-            newArc = newArc.replace(/,/g, " ");
-        } else {
-            var newArc = d3.select(this).attr("d");
-        };
-
-        if (d.endAngle > 90 * Math.PI / 180 && data.length > 1) {
-            var startLoc = /M(.*?)A/,
-                middleLoc = /A(.*?)0 0 1/,
-                endLoc = /0 0 1 (.*?)$/;
-            var newStart = endLoc.exec(newArc)[1];
-            var newEnd = startLoc.exec(newArc)[1];
-            var middleSec = middleLoc.exec(newArc)[1];
-
-            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
-        };
-
-        svg.append("path")
-            .attr("class", "hiddenDonutArcs")
-            .attr("id", "donutArc" + i)
-            .attr("d", newArc)
-            .style("fill", "none");
-    });
-
-g.selectAll(".donutText")
-    .data(pie(data))
-    .enter().append("text")
-    .attr("class", "donutText")
-    .attr("dy", function(d, i) {
-        var offset = 10;
-        var textoffset = (computetext.node().getBBox().height / 4);
-        var arcoffset = (outerRingWidth / 2); 
-        return (d.endAngle > 90 * Math.PI / 180 && data.length > 1) ? (arcoffset * -1) + textoffset : arcoffset + textoffset; 
-    })
-    .style({
-        fill: '#fff'
-    })
-    .append("textPath")
-    .attr("startOffset", function() { return data.length < 2 ? "550" : '50%'})
-    .style("text-anchor", "middle")
-    .attr("xlink:href", function(d, i) { return "#donutArc" + i; })
-    .text(function(d) { return d.data; });
-
-d3.select('#logo svg').call(branchtree)
-},{"./lib/branchtree":1,"./lib/circle":2,"d3":4}],4:[function(require,module,exports){
+},{"./lib/emblem":4,"d3":6}],6:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.16"
@@ -9903,4 +9974,4 @@ d3.select('#logo svg').call(branchtree)
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}]},{},[3]);
+},{}]},{},[5]);

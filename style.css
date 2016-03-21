@@ -1,18 +1,89 @@
+body {
+    font-family: 'Fira Mono';
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+}
+header {
+    flex: 0 0 58px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+.content-wrapper {
+    display: flex;
+    flex: 1 1 100%;
+    flex-direction: row;
+    background: #F2F2F2;
+}
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 20%;
+    min-width: 50px;
+    border-right: 1px solid #D9D9D9;
+    overflow: hidden;
+}
+.output {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/*
+header {
+    width: 100%;
+    height: 40px;
+    background: #464646;
+}
+header h2 {
+    font-weight: 200;
+    margin: 0;
+    padding: 0 20px;
+    font-size: 28px;
+    line-height: 40px;
+    color: #fff;
+}
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+.sidebar {
+    flex: 0 0 300px;
+    min-width: 300px;
+    background: #ccc;
+}
+.output {
+    padding: 40px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}*/
 #logo { 
-  width: 500px;
-  height: 500px; 
+  width: 400px;
+  height: 400px; 
 }
 .textpath {
     fill: #fff;
 }
 svg text {
-    font-family: 'Fira Mono';
     font-size: 25px;
     letter-spacing: 10px;
     text-transform: uppercase;
-}
-#tree {
-    width: 400px;
-    height: 400px;
-    background: #ccc;
 }
