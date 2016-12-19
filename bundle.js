@@ -124,7 +124,7 @@ function textarc() {
 }
 
 module.exports = textarc;
-},{"d3":6}],2:[function(require,module,exports){
+},{"d3":7}],2:[function(require,module,exports){
 var d3 = require('d3');
 
 function branchtree() {
@@ -134,16 +134,17 @@ function branchtree() {
     var depth = 5;
     var minLineWeight = 1;
     var animateDuration = 600;
-    var linelength = 5;
+    var linelength = 8;
+    var w, h;
 
     var align = 'middle';
     var alignSettings = {
-        middle: function() { return (h / 3) * 2; },
+        middle: function() { return (h / 3) * 2.2; },
         bottom: function() { return h; }
     };
 
     var da = 0.6; // Angle delta
-    var dl = 0.8; // Length delta (factor)
+    var dl = 0.82; // Length delta (factor)
     var ar = 0.3; // Randomness
 
     function branch(b) {
@@ -197,16 +198,21 @@ function branchtree() {
 
     var tree = function(selection) {
         selection.each(function(d) {
-                        
-            w = this.getBBox().width;
-            h = this.getBBox().height;
 
+            if( this.nodeName === 'g' ) {
+                w = this.parentNode.getBBox().width;
+                h = this.parentNode.getBBox().height;
+            } else {
+                w = this.getBBox().width;
+                h = this.getBBox().height;
+            };
+                        
             seed = {
                 i: 0,
                 x: w / 2,
                 y: alignSettings[align](),
                 a: 0,
-                l: align === 'middle' ? h / 11 : (h / 100 ) * linelength,
+                l: align === 'middle' ? h / 9 : (h / 100 ) * linelength,
                 d: 0
             };
 
@@ -222,7 +228,7 @@ function branchtree() {
                 .style('stroke-width', function(d) {
                     return parseInt(depth + minLineWeight - d.d) + 'px';
                 })
-                .style('stroke', '#fff')
+                .style('stroke', 'rgb(14, 14, 14)')
                 .attr('id', function(d) {
                     return 'id' + d.i;
                 });
@@ -241,7 +247,7 @@ function branchtree() {
     /**
      * Configuration methods
      */
-    tree.prototype.minLineWeight = function(_) {
+    tree.minLineWeight = function(_) {
         if (!arguments) return minLineWeight;
         minLineWeight = _;
         return tree;
@@ -281,12 +287,13 @@ function branchtree() {
         linelength = _;
         return tree;
     };
+    
     return tree;
 
 };
 
 module.exports = branchtree;
-},{"d3":6}],3:[function(require,module,exports){
+},{"d3":7}],3:[function(require,module,exports){
 var d3 = require('d3');
 
 function circle(w, h, r, styles) {
@@ -336,7 +343,7 @@ function circle(w, h, r, styles) {
 };
 
 module.exports = circle;
-},{"d3":6}],4:[function(require,module,exports){
+},{"d3":7}],4:[function(require,module,exports){
 var d3 = require('d3');
 var branchtree = require('./branchtree')();
 var Circle = require('./circle');
@@ -467,20 +474,37 @@ function Emblem(element, data) {
 };
 
 module.exports = Emblem;
-},{"./arc":1,"./branchtree":2,"./circle":3,"d3":6}],5:[function(require,module,exports){
+},{"./arc":1,"./branchtree":2,"./circle":3,"d3":7}],5:[function(require,module,exports){
+function createPointsPoly(n, radius, width, height) {
+    var base = 2 * Math.PI / n;
+    var pointpairs = [];
+    
+    for(i = 0; i < n; i++) {
+        fi_i = base * i + Math.PI / 2;
+        x_i = radius * Math.cos(fi_i) + width / 2;
+        y_i = radius * Math.sin(fi_i) + height / 2;
+        pointpairs.push({"x":x_i, "y":y_i});
+    };
+    
+    return pointpairs;
+};
+
+module.exports = createPointsPoly;
+},{}],6:[function(require,module,exports){
 var d3 = require('d3');
+var pointpair = require('./lib/pointspolygon');
+var branchtree = require('./lib/branchtree');
 var Emblem = require('./lib/emblem');
 
-
-var emblem = Emblem('#logo', ['Nick', 'Brian', 'Alex']);
+var emblem = Emblem('#logo', ['Nicey','Test']);
 
 emblem
-.arcPadding(0.1)
+.arcPadding(0)
 .treeRandomness(0)
-.innerRadiusModifer(3);
+.innerRadiusModifer(0);
 
 emblem();
-},{"./lib/emblem":4,"d3":6}],6:[function(require,module,exports){
+},{"./lib/branchtree":2,"./lib/emblem":4,"./lib/pointspolygon":5,"d3":7}],7:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.16"
@@ -10035,4 +10059,4 @@ emblem();
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}]},{},[5]);
+},{}]},{},[6]);
